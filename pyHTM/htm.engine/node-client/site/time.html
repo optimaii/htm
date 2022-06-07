@@ -1,0 +1,45 @@
+---
+title: Time Search Map
+layout: map.hbt
+---
+
+<link href="{{baseurl}}/js/external/jQRangeSlider-5.7.1/css/iThing.css" type="text/css" rel="stylesheet" />
+<link href="{{baseurl}}/css/time.css" rel="stylesheet">
+
+<div class="container">
+    <div id="loading" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <h1>Loading, please wait...</h1>
+                <p>All the historical anomaly values for each route on this map are loading from the server right now. Once
+                    complete, you can use the date/time slider at the top of the page to scroll through time and see
+                    which routes are most anomolous.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="title">
+    <h1>All Routes</h1>
+    <h4><a href="{{ baseurl }}">HOME</a></h4>
+    <form>
+        <ul>
+            <li>
+                <label>
+                    <input type="checkbox" class="routes" checked="checked" /> Show Route Markers</label>
+            </li>
+            <li>
+                <label>
+                    <input type="checkbox" class="incidents" checked="checked" /> Show Incident Markers</label>
+            </li>
+        </ul>
+        <form>
+</div>
+
+<div id="slider"></div>
+
+<script src="{{baseurl}}/bower_components/async/lib/async.js"></script>
+<script src="{{baseurl}}/bower_components/jquery-ui/jquery-ui.min.js"></script>
+<script src="{{baseurl}}/js/external/jQRangeSlider-5.7.1/jQDateRangeSlider-min.js"></script>
+
+<script src="{{baseurl}}/js/time.js" type="text/javascript"></script>

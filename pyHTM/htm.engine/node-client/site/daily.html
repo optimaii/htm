@@ -1,0 +1,136 @@
+---
+title: Daily Charts
+layout: main.hbt
+---
+
+<link href="{{baseurl}}/css/charts.css" rel="stylesheet">
+
+<ol class="breadcrumb col-md-12">
+    <li><a href="{{baseurl}}">Home</a></li>
+    <li><a href="" id="all-charts">All Charts</a></li>
+    <li class="active" id="this-crumb">{{title}}</li>
+</ol>
+
+<div id="details"></div>
+
+<table class="charts table table-striped">
+    <tbody>
+    </tbody>
+</table>
+
+<script type="text/javascript">
+
+    $(function() {
+
+        // converts query string to json object
+        function getJsonFromUrl() {
+            var query = location.search.substr(1);
+            var result = {};
+            query.split("&").forEach(function(part) {
+                var item = part.split("=");
+                result[item[0]] = decodeURIComponent(item[1]);
+            });
+            return result;
+        }
+
+        function padCsvDataToFillTime(csvData, since, until) {
+            var lines = csvData.trim().split('\n');
+            var header = lines.shift();
+            var sinceInjection = since.format('YYYY/MM/DD HH:mm:ss') + ',,';
+            var untilInjection = until.format('YYYY/MM/DD HH:mm:ss') + ',,';
+            var out = [ header ];
+            out.push(sinceInjection);
+            out = out.concat(lines);
+            out.push(untilInjection);
+            return out.join('\n');
+        }
+
+        function addChart(id, csvData, details, rowTmpl, since, until) {
+            var now = moment();
+
+            details.chartId = id;
+            details.since = since.format('ddd DD MMM HH:mm A');
+            details.until = until.format('ddd DD MMM HH:mm A');
+
+            $('table.charts tbody').append(Handlebars.compile(rowTmpl)(details));
+
+            return new Dygraph(
+                document.getElementById("chart-" + id), csvData, {
+                    anomaly: {
+                        color: "red",
+                        strokeWidth: 2.0,
+                        axis: {
+                            valueRange: [0, 1.0]
+                        }
+                    },
+                    axes: {
+                        y: {
+                            valueRange: [0, 80]
+                        }
+                    },
+                    width: $('#container-' + id).width(),
+                    height: 120
+                }
+            );
+        }
+
+
+        // Program start.
+
+        moment.tz.setDefault("America/New_York");
+
+        var query = getJsonFromUrl();
+        var pathId = query.id;
+        var now = moment();
+        if (query.until) {
+            now = moment.unix(query.until);
+        }
+
+        $('#all-charts').attr('href', '{{baseurl}}/charts/?id=' + pathId)
+                        .html('Route ' + pathId + ' Combined Chart');
+        $('#this-crumb').html('Route ' + pathId + ' Daily Charts');
+
+        // Get the marker template that we'll use to display route details.
+        $.get('{{ baseurl }}/templates/markerLabel.hbt', function(detailsTmpl) {
+            // Get a row template
+            $.get('{{ baseurl }}/templates/dailyChartRow.hbt', function(rowTmpl) {
+                // Gets details about this route.
+                $.getJSON('{{ baseurl }}/data/pathDetails', {id: pathId}, function(details) {
+                    var graphs = [];
+
+                    $('#details').html(Handlebars.compile(detailsTmpl)({
+                        title: 'Route ' + pathId + ' Daily Charts',
+                        subtitle: details.paths[pathId].borough,
+                        description: details.paths[pathId].linkName
+                    }));
+
+                    function chartTheDayBefore(now) {
+                        var oneDayAgo = moment(now).subtract(1, 'day');
+                        var myQuery = {
+                            since: oneDayAgo.unix(),
+                            until: now.unix()
+                        };
+                        var csvPath = '/data/' + pathId + '?' + $.param(myQuery);
+
+                        $.get(csvPath, {dataType: 'csv'}, function(csvData) {
+                            var chart;
+
+                            if (csvData.trim().split('\n').length > 1) {
+
+                                csvData = padCsvDataToFillTime(csvData, oneDayAgo, now);
+
+                                chart = addChart(graphs.length, csvData, details, rowTmpl, oneDayAgo, now);
+                                graphs.push(chart);
+                                chartTheDayBefore(oneDayAgo);
+                            }
+                        });
+
+                    }
+
+                    chartTheDayBefore(now);
+                });
+            });
+        });
+
+    });
+</script>

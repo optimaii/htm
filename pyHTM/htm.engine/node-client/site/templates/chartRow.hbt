@@ -1,0 +1,50 @@
+<tr id="chart-{{chartId}}-row">
+    <td class="left">
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Route {{id}} <small>({{Borough}})</small></h3>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-12">
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+
+                    <a class="btn btn-primary" href="{{baseurl}}/map?id={{id}}" role="button">
+                        <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> Map
+                    </a>
+
+                    {{#if until}}
+                    <a class="btn btn-primary" href="{{baseurl}}/daily?id={{id}}&until={{until}}" role="button">
+                        <span class="glyphicon glyphicon-signal" aria-hidden="true"></span> Daily
+                    </a>
+                    {{else}}
+                    <a class="btn btn-primary" href="{{baseurl}}/daily?id={{id}}" role="button">
+                        <span class="glyphicon glyphicon-signal" aria-hidden="true"></span> Daily
+                    </a>
+                    {{/if}}
+
+                    <a class="btn btn-primary hide-chart" href="#" role="button" data-chart="{{chartId}}">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Hide
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <p>{{linkName}}</p>
+            </div>
+        </div>
+
+    </td>
+    <td class="right" id="container-{{chartId}}">
+        <div id="chart-{{chartId}}"></div>
+    </td>
+</tr>

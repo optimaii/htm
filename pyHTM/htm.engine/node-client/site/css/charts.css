@@ -1,0 +1,12 @@
+table {
+    width: 100%;
+}
+table td {
+    padding: 0 10px;
+}
+table td.left {
+    width: 20%;
+}
+table td.right {
+    width: 80%;
+}

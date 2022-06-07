@@ -1,0 +1,64 @@
+---
+title: Traffic Map
+layout: map.hbt
+---
+
+<div id="title">
+    <h3>All Routes</h3>
+    <p>Each route has a marker at its first point. Click it to get more details.</p>
+    <form>
+        <ul>
+            <li>
+                <label>
+                    <input type="checkbox" class="routes" checked="checked" /> Show Route Markers</label>
+            </li>
+        </ul>
+        <form>
+</div>
+
+
+<script type="text/javascript">
+    $(function() {
+
+        var pageTitle, query = getUrlQuery(),
+            map;
+
+        moment.tz.setDefault('America/New_York');
+
+        $.get('{{ baseurl }}/templates/markerLabel.hbt', function(markerTemplate) {
+
+            map = new TrafficMap('map-canvas', '{{baseurl}}', markerTemplate, {
+                center: {
+                    lat: 40.7903,
+                    lng: -73.9597
+                },
+                zoom: 11
+            });
+
+            $.getJSON('{{ baseurl }}/data/pathDetails', query, function(data) {
+                var $showRoutes = $('input.routes');
+                map.setRoutePaths(data.paths, markerTemplate);
+                map.enableSearchBox('pac-input');
+                map.enableRightClickSearch();
+
+                $showRoutes.change(function() {
+                    map.setMarkersVisible('routes', $showRoutes.is(':checked'));
+                });
+
+            });
+
+        });
+
+        if (query.borough) {
+            query.borough = query.borough.replace('%20', ' ')
+            pageTitle = 'Map of ' + query.borough;
+        } else if (query.id) {
+            pageTitle = 'Map of route(s): ' + query.id;
+        }
+
+        $('#title h3').html(pageTitle);
+        $('title').html(pageTitle);
+
+    });
+</script>
+

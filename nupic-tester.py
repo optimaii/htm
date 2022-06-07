@@ -1,7 +1,7 @@
 from components.encoders import WordEncoder 
 from components.sdr import *
 from nupic.pool import SpatialPooler as SP
-from nupic.temporal_memory.temporal_memory import TemporalMemoryApicalTiebreak
+from nupic.temporal_memory import TemporalMemory
 from components.scalars import Encoder
 import numpy as np
 from tqdm import tqdm
@@ -339,7 +339,6 @@ def Test3(epochs):
     columnDimensions = (64,64)
     inputSize = np.array(inputDimensions).prod()
     columnNumber = np.array(columnDimensions).prod()
-
     activeCols = np.zeros(columnNumber, dtype=uintType)
     print('Initializing Spatial Pooler')
     sp = SP(
@@ -359,7 +358,21 @@ def Test3(epochs):
             boost_strength=0.0,
             seed=1,
         )
-    
+    tp = TemporalMemory(
+               columnDimensions=(columnDimensions,),
+               cellsPerColumn=32,
+               activationThreshold=13,
+               initialPermanence=0.21,
+               connectedPermanence=0.50,
+               minThreshold=10,
+               maxNewSynapseCount=20,
+               permanenceIncrement=0.10,
+               permanenceDecrement=0.10,
+               predictedSegmentDecrement=0.0,
+               maxSegmentsPerCell=255,
+               maxSynapsesPerSegment=255,
+               seed=42)
+
     #LEARNIG A SEQUENCE
     for i in range(epochs):
         for i in range(len(seq)):
@@ -367,8 +380,10 @@ def Test3(epochs):
             print('Connnecting synapses to input space')
             active = sp.compute(seq[i], True, activeCols)
             overlaps = sp.get_boosted_overlaps()
-            print('Current Overlaps', heatMap(overlaps))
+            #print('Current Overlaps', heatMap(overlaps))
             print('Vizualizing Potential Pool')
-            print(len(active))
+            tp.compute(active,True)
+            predicted = tp.getPredictiveCells()
+            print(predicted)
 
 Test3(1)
